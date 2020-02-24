@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+    <!-- including ECharts file -->
+    <script src="echarts.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="./extension/dataTool.js"></script>
+    <script src="./extension/dataTool.min.js"></script>
+</head>
+<body>
+    <!-- prepare a DOM container with width and height -->
+    <div id="main" style="width: 600px;height:400px;"></div>
+    <script type="text/javascript">
+        // based on prepared DOM, initialize echarts instance
+        var myChart = echarts.init(document.getElementById('main'));
+        myChart.showLoading();
+        
+    $.get('./data/asset/data/les-miserables.gexf', function (xml)  {
+    myChart.hideLoading();
+  //  console.log(echarts.dataTool.gexf)
+    var graph = echarts.dataTool.gexf.parse(xml);
+    var categories = [];
+    for (var i = 0; i < 9; i++) {
+        categories[i] = {
+            name: 'categorie' + i
+        };
+    }
+    graph.nodes.forEach(function (node) {
+        node.itemStyle = null;
+        node.symbolSize = 10;
+        node.value = node.symbolSize;
+        node.category = node.attributes.modularity_class;
+        // Use random x, y
+        node.x = node.y = null;
+        node.draggable = true;
+    });
+    option = {
+        title: {
+            text: 'Les Miserables',
+            subtext: 'Default layout',
+            top: 'bottom',
+            left: 'right'
+        },
+        tooltip: {},
+        legend: [{
+            // selectedMode: 'single',
+            data: categories.map(function (a) {
+                return a.name;
+            })
+        }],
+        animation: false,
+        series : [
+            {
+                name: 'Les Miserables',
+                type: 'graph',
+                layout: 'force',
+                data: graph.nodes,
+                links: graph.links,
+                categories: categories,
+                roam: true,
+                label: {
+                    position: 'right'
+                },
+                force: {
+                    repulsion: 100,
+                    edgeLength : 100
+                }
+            }
+        ]
+    };
+   console.log("graph : "+JSON.stringify(graph))
+//   console.log("data : "+JSON.stringify(option.series[0].data))
+// console.log("links : "+JSON.stringify(option.series[0].links))
+/*option.series.forEach(function(s){
+    console.log("data :"+ JSON.stringify(s.data) + "link :"+ JSON.stringify(s.links));
+});*/
+    myChart.setOption(option);
+}, 'xml');
+    </script>
+</body>
+</html>
